@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+type SteamAppDetailsResponse = Record<string, { success: boolean; data?: unknown }>;
+
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const appidsParam = searchParams.get('appids');
@@ -39,7 +41,7 @@ export async function GET(request: NextRequest) {
         batches.push(appids.slice(i, i + BATCH_SIZE));
     }
 
-    const mergedResults: Record<string, any> = {};
+    const mergedResults: SteamAppDetailsResponse = {};
 
     try {
         // Process all batches in parallel for maximum speed
@@ -66,7 +68,10 @@ export async function GET(request: NextRequest) {
     }
 }
 
-async function fetchBatchWithRetry(appids: string[], retries = 1): Promise<any> {
+async function fetchBatchWithRetry(
+    appids: string[],
+    retries = 1
+): Promise<SteamAppDetailsResponse> {
     const url = `https://store.steampowered.com/api/appdetails?appids=${appids.join(',')}`;
 
     try {
@@ -83,14 +88,14 @@ async function fetchBatchWithRetry(appids: string[], retries = 1): Promise<any> 
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
+        const data: unknown = await response.json();
 
         // Basic validation that we got an object back
         if (!data || typeof data !== 'object') {
             throw new Error('Invalid response format from Steam');
         }
 
-        return data;
+        return data as SteamAppDetailsResponse;
     } catch (error) {
         if (retries > 0) {
             // Simple retry logic
