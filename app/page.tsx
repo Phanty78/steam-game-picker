@@ -8,6 +8,10 @@ import { saveGameData, getGameData } from '@/lib/cache';
 import { Game, Recommendation } from '@/lib/types';
 
 
+function randomIndex(length: number): number {
+  return Math.floor(Math.random() * length);
+}
+
 export default function Home() {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
@@ -196,7 +200,7 @@ export default function Home() {
         setTopRatedIndex(nextIndex);
       } else {
         // Random selection
-        selectedGame = filteredGames[Math.floor(Math.random() * filteredGames.length)];
+        selectedGame = filteredGames[randomIndex(filteredGames.length)];
         setTopRatedIndex(0);
       }
 
